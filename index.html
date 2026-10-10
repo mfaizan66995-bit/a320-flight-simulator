@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Airbus A320 Flight Simulator - Professional Cockpit</title>
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --panel: #0f1419;
+      --accent: #00d4ff;
+      --accent-dark: #0099cc;
+      --text: #e0e6ed;
+      --text-dim: #8a92a2;
+      --green: #00ff41;
+      --amber: #ffb800;
+      --red: #ff3333;
+      --cyan: #00d4ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+    }
+
+    .simulator {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: 50px 1fr 120px;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: linear-gradient(180deg, #1a1f27, #0f1419);
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .header-title {
+      color: var(--cyan);
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    .header-info {
+      display: flex;
+      gap: 30px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .header-info span {
+      color: var(--accent);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      display: grid;
+      grid-template-columns: 300px 1fr 280px;
+      gap: 10px;
+      padding: 10px;
+      background: var(--bg);
+    }
+
+    /* ===== LEFT PANEL: CONTROL PANEL ===== */
+    .control-panel {
+      background: linear-gradient(180deg, #12171f, #0d111a);
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .panel-section {
+      background: rgba(15, 20, 25, 0.8);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .panel-section-title {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+      padding-bottom: 8px;
+    }
+
+    .control-group {
+      margin-bottom: 12px;
+    }
+
+    .control-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .slider-container {
+      position: relative;
+      height: 24px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      border: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 24px;
+      background: linear-gradient(90deg, var(--cyan), var(--accent-dark));
+      border: 2px solid var(--accent);
+      cursor: pointer;
+      border-radius: 2px;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 24px;
+      background: linear-gradient(90deg, var(--cyan), var(--accent-dark));
+      border: 2px solid var(--accent);
+      cursor: pointer;
+      border-radius: 2px;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      color: var(--text);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background: rgba(0, 212, 255, 0.2);
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn.active {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+    }
+
+    .btn.warning {
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+
+    .btn.warning.active {
+      background: var(--amber);
+      color: var(--bg);
+    }
+
+    .btn.danger {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn.danger.active {
+      background: var(--red);
+      color: var(--bg);
+    }
+
+    .display-value {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      text-align: center;
+      color: var(--accent);
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    /* ===== CENTER: CANVAS ===== */
+    .viewport {
+      background: #0a0e14;
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ===== RIGHT PANEL: INSTRUMENTS ===== */
+    .instruments-panel {
+      background: linear-gradient(180deg, #12171f, #0d111a);
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .instrument {
+      background: rgba(15, 20, 25, 0.8);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 6px;
+      padding: 10px;
+    }
+
+    .instrument-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+    }
+
+    .instrument-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--accent);
+      text-align: center;
+      text-shadow: 0 0 6px rgba(0, 212, 255, 0.4);
+    }
+
+    .instrument-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .instrument-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      width: 50%;
+      box-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+    }
+
+    /* ===== FOOTER: VIRTUAL YOKE & THROTTLE ===== */
+    .footer {
+      background: linear-gradient(180deg, #12171f, #0d111a);
+      border-top: 2px solid rgba(0, 212, 255, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      padding: 10px;
+    }
+
+    .yoke-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .yoke {
+      width: 120px;
+      height: 120px;
+      border: 3px solid var(--accent);
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(0, 212, 255, 0.1), rgba(0, 0, 0, 0.5));
+      position: relative;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+
+    .yoke.active {
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+    }
+
+    .yoke-center {
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.7);
+    }
+
+    .yoke-indicator {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--text-dim);
+    }
+
+    .throttle-container {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .throttle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .throttle-bar {
+      width: 25px;
+      height: 100px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      position: relative;
+      cursor: ns-resize;
+      overflow: hidden;
+    }
+
+    .throttle-fill {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(180deg, var(--green), var(--cyan));
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+      transition: height 0.05s;
+    }
+
+    .throttle-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .throttle-value {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* ===== SCROLLBAR STYLING ===== */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 212, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 212, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="simulator">
+    <div class="header">
+      <div class="header-title">✈ Airbus A320 Flight Simulator</div>
+      <div class="header-info">
+        <div>Flight Time: <span id="flightTime">00:00:00</span></div>
+        <div>Status: <span id="statusText">READY</span></div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- LEFT PANEL -->
+      <div class="control-panel">
+        <div class="panel-section">
+          <div class="panel-section-title">Flight Mode</div>
+          <div class="button-group">
+            <button class="btn active" id="btnTakeoff">Takeoff</button>
+            <button class="btn" id="btnClimb">Climb</button>
+            <button class="btn" id="btnCruise">Cruise</button>
+            <button class="btn" id="btnDescent">Descent</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">Flight Controls</div>
+          
+          <div class="control-group">
+            <div class="control-label">
+              <span>Autopilot</span>
+              <span id="apStatus">OFF</span>
+            </div>
+            <button class="btn" id="btnAutopilot">AUTOPILOT</button>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Landing Gear</span>
+              <span id="gearStatus">UP</span>
+            </div>
+            <button class="btn warning" id="btnGear">GEAR DOWN</button>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Flaps</span>
+              <span id="flapsDisplay">0°</span>
+            </div>
+            <div class="slider-container">
+              <input type="range" id="flapsSlider" min="0" max="4" value="0">
+            </div>
+            <div class="display-value" id="flapsValue">0°</div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Heading Select</span>
+              <span id="hdgDisplay">090°</span>
+            </div>
+            <div class="slider-container">
+              <input type="range" id="headingSlider" min="0" max="359" value="90">
+            </div>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Altitude Select</span>
+              <span id="altDisplay">5000 ft</span>
+            </div>
+            <div class="slider-container">
+              <input type="range" id="altitudeSlider" min="1000" max="43000" step="100" value="5000">
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">Systems</div>
+          
+          <div class="control-group">
+            <div class="control-label">
+              <span>Engine 1</span>
+              <span id="eng1Status">OK</span>
+            </div>
+            <button class="btn" id="btnEng1">START</button>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Engine 2</span>
+              <span id="eng2Status">OK</span>
+            </div>
+            <button class="btn" id="btnEng2">START</button>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Lights</span>
+              <span id="lightsStatus">OFF</span>
+            </div>
+            <button class="btn" id="btnLights">LIGHTS ON</button>
+          </div>
+
+          <div class="control-group">
+            <div class="control-label">
+              <span>Master Battery</span>
+              <span id="batteryStatus">ON</span>
+            </div>
+            <button class="btn danger" id="btnBattery">BATTERY</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: VIEWPORT -->
+      <div class="viewport">
+        <canvas id="mainCanvas"></canvas>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="instruments-panel">
+        <div class="instrument">
+          <div class="instrument-label">Altitude</div>
+          <div class="instrument-value" id="altValue">0 ft</div>
+          <div class="instrument-bar">
+            <div class="instrument-bar-fill" id="altBar"></div>
+          </div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">Airspeed</div>
+          <div class="instrument-value" id="speedValue">0 kts</div>
+          <div class="instrument-bar">
+            <div class="instrument-bar-fill" id="speedBar"></div>
+          </div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">Vertical Speed</div>
+          <div class="instrument-value" id="vsValue">0 fpm</div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">Heading</div>
+          <div class="instrument-value" id="headingValue">090°</div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">Pitch</div>
+          <div class="instrument-value" id="pitchValue">0.0°</div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">Bank</div>
+          <div class="instrument-value" id="bankValue">0.0°</div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">Mach</div>
+          <div class="instrument-value" id="machValue">0.00</div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">Fuel</div>
+          <div class="instrument-value" id="fuelValue">25000 kg</div>
+          <div class="instrument-bar">
+            <div class="instrument-bar-fill" id="fuelBar" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">N1 Engine 1</div>
+          <div class="instrument-value" id="n1Value">0%</div>
+          <div class="instrument-bar">
+            <div class="instrument-bar-fill" id="n1Bar"></div>
+          </div>
+        </div>
+
+        <div class="instrument">
+          <div class="instrument-label">N1 Engine 2</div>
+          <div class="instrument-value" id="n2Value">0%</div>
+          <div class="instrument-bar">
+            <div class="instrument-bar-fill" id="n2Bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER: CONTROLS -->
+    <div class="footer">
+      <div class="yoke-container">
+        <div class="yoke" id="yoke">
+          <div class="yoke-center"></div>
+        </div>
+        <div style="font-size: 9px; color: var(--text-dim);">Pitch: <span id="yokePitch">0.0°</span> | Roll: <span id="yokeRoll">0.0°</span></div>
+      </div>
+
+      <div class="throttle-container">
+        <div class="throttle">
+          <div class="throttle-bar" id="throttle1">
+            <div class="throttle-fill"></div>
+          </div>
+          <div class="throttle-label">ENG 1</div>
+          <div class="throttle-value" id="throttle1Value">0%</div>
+        </div>
+        <div class="throttle">
+          <div class="throttle-bar" id="throttle2">
+            <div class="throttle-fill"></div>
+          </div>
+          <div class="throttle-label">ENG 2</div>
+          <div class="throttle-value" id="throttle2Value">0%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== FLIGHT STATE =====
+    const state = {
+      // Position & Motion
+      altitude: 0,
+      speed: 0,
+      heading: 90,
+      pitch: 0,
+      roll: 0,
+      verticalSpeed: 0,
+      
+      // Controls
+      throttle1: 0,
+      throttle2: 0,
+      flaps: 0,
+      gearDown: false,
+      
+      // Systems
+      engine1: false,
+      engine2: false,
+      autopilot: false,
+      lightsOn: false,
+      batteryOn: true,
+      
+      // Flight Mode
+      mode: 'takeoff',
+      
+      // Targets (for autopilot)
+      targetHeading: 90,
+      targetAltitude: 5000,
+      
+      // Fuel & Engines
+      fuel: 25000, // kg
+      n1_1: 0, // Engine 1 N1 RPM %
+      n1_2: 0, // Engine 2 N1 RPM %
+      
+      // Time
+      flightTime: 0,
+      
+      // Position in world
+      x: 0,
+      y: 0,
+      z: 0
+    };
+
+    // ===== CANVAS SETUP =====
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // ===== FLIGHT PHYSICS =====
+    class FlightModel {
+      constructor(state) {
+        this.state = state;
+        this.gravity = 32.174; // ft/s²
+        this.rho = 0.002377; // slugs/ft³ at sea level
+      }
+
+      update(dt) {
+        const s = this.state;
+
+        // Engine dynamics
+        if (s.engine1) {
+          s.n1_1 = Math.min(100, s.n1_1 + (s.throttle1 - s.n1_1) * 0.08);
+        } else {
+          s.n1_1 = Math.max(0, s.n1_1 - 0.05);
+        }
+        
+        if (s.engine2) {
+          s.n1_2 = Math.min(100, s.n1_2 + (s.throttle2 - s.n1_2) * 0.08);
+        } else {
+          s.n1_2 = Math.max(0, s.n1_2 - 0.05);
+        }
+
+        // Thrust from engines
+        const avgThrottle = (s.n1_1 + s.n1_2) / 2;
+        const thrust = avgThrottle * 60000 * 2; // lbf, two engines
+
+        // Drag coefficient varies with flaps
+        let dragCoeff = 0.025;
+        if (s.flaps > 0) dragCoeff += 0.015 * s.flaps;
+        if (s.gearDown) dragCoeff += 0.02;
+
+        // Dynamic pressure
+        const dynamicPressure = 0.5 * this.rho * s.speed * s.speed;
+        const wingArea = 1320; // ft²
+
+        // Drag force
+        const drag = dragCoeff * dynamicPressure * wingArea;
+
+        // Lift and weight
+        const weight = 340000; // lbs (loaded)
+        const liftCoeff = 0.3 + (s.pitch * 0.05) + (s.flaps * 0.2);
+        const lift = liftCoeff * dynamicPressure * wingArea;
+
+        // Acceleration (simplified)
+        const netThrust = thrust - drag;
+        const accel = (netThrust / weight) * this.gravity * dt;
+        s.speed += accel;
+        s.speed = Math.max(0, s.speed);
+
+        // Vertical motion
+        const verticalForce = lift - weight;
+        const verticalAccel = (verticalForce / weight) * this.gravity * dt;
+        s.verticalSpeed += verticalAccel;
+        s.altitude += s.verticalSpeed * dt;
+        s.altitude = Math.max(0, s.altitude);
+
+        // Autopilot
+        if (s.autopilot) {
+          // Heading hold
+          const hdgDiff = this.normalizeAngle(s.targetHeading - s.heading);
+          const rollTarget = Math.max(-25, Math.min(25, hdgDiff * 0.5));
+          s.roll += (rollTarget - s.roll) * 0.05;
+
+          // Altitude hold
+          const altDiff = s.targetAltitude - s.altitude;
+          const pitchTarget = Math.max(-10, Math.min(10, altDiff * 0.00005));
+          s.pitch += (pitchTarget - s.pitch) * 0.03;
+        }
+
+        // Natural pitch/roll damping
+        s.pitch *= 0.98;
+        s.roll *= 0.96;
+
+        // Update heading based on roll
+        if (Math.abs(s.roll) > 1) {
+          s.heading += Math.sin(s.roll * Math.PI / 180) * 0.3 * dt * 60;
+          if (s.heading < 0) s.heading += 360;
+          if (s.heading > 360) s.heading -= 360;
+        }
+
+        // Fuel consumption
+        s.fuel -= (avgThrottle * 100) * dt;
+        s.fuel = Math.max(0, s.fuel);
+
+        // World position
+        const radHeading = s.heading * Math.PI / 180;
+        s.x += Math.sin(radHeading) * s.speed * dt;
+        s.y += Math.cos(radHeading) * s.speed * dt;
+        s.z = s.altitude;
+
+        // Mach calculation (simplified)
+        const mach = s.speed / 661.48; // at sea level
+        this.mach = mach;
+      }
+
+      normalizeAngle(angle) {
+        while (angle > 180) angle -= 360;
+        while (angle < -180) angle += 360;
+        return angle;
+      }
+    }
+
+    const flightModel = new FlightModel(state);
+
+    // ===== INPUT HANDLING =====
+    const yoke = document.getElementById('yoke');
+    let yokeDragging = false;
+    let yokeStartX = 0, yokeStartY = 0;
+
+    yoke.addEventListener('mousedown', (e) => {
+      yokeDragging = true;
+      yokeStartX = e.clientX;
+      yokeStartY = e.clientY;
+      yoke.classList.add('active');
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!yokeDragging) return;
+      
+      const deltaX = (e.clientX - yokeStartX) * 0.15;
+      const deltaY = (e.clientY - yokeStartY) * 0.15;
+      
+      state.roll = Math.max(-30, Math.min(30, deltaX));
+      state.pitch = Math.max(-30, Math.min(30, deltaY));
+    });
+
+    document.addEventListener('mouseup', () => {
+      yokeDragging = false;
+      yoke.classList.remove('active');
+    });
+
+    // Throttle drag
+    const throttle1Elem = document.getElementById('throttle1');
+    const throttle2Elem = document.getElementById('throttle2');
+    
+    let dragThrottle = null;
+    
+    function setupThrottleDrag(elem, which) {
+      elem.addEventListener('mousedown', (e) => {
+        dragThrottle = which;
+      });
+    }
+    
+    setupThrottleDrag(throttle1Elem, 1);
+    setupThrottleDrag(throttle2Elem, 2);
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!dragThrottle) return;
+      const rect = dragThrottle === 1 ? throttle1Elem.getBoundingClientRect() : throttle2Elem.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const pct = Math.max(0, Math.min(100, 100 - (y / rect.height) * 100));
+      
+      if (dragThrottle === 1) {
+        state.throttle1 = pct;
+      } else {
+        state.throttle2 = pct;
+      }
+    });
+    
+    document.addEventListener('mouseup', () => {
+      dragThrottle = null;
+    });
+
+    // Control buttons
+    document.getElementById('btnTakeoff').addEventListener('click', () => {
+      state.mode = 'takeoff';
+      setModeButtons('takeoff');
+    });
+    
+    document.getElementById('btnClimb').addEventListener('click', () => {
+      state.mode = 'climb';
+      setModeButtons('climb');
+    });
+    
+    document.getElementById('btnCruise').addEventListener('click', () => {
+      state.mode = 'cruise';
+      setModeButtons('cruise');
+    });
+    
+    document.getElementById('btnDescent').addEventListener('click', () => {
+      state.mode = 'descent';
+      setModeButtons('descent');
+    });
+
+    function setModeButtons(mode) {
+      document.querySelectorAll('[id^="btn"][id$="own"]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById('btnTakeoff').classList.toggle('active', mode === 'takeoff');
+      document.getElementById('btnClimb').classList.toggle('active', mode === 'climb');
+      document.getElementById('btnCruise').classList.toggle('active', mode === 'cruise');
+      document.getElementById('btnDescent').classList.toggle('active', mode === 'descent');
+    }
+
+    document.getElementById('btnAutopilot').addEventListener('click', () => {
+      state.autopilot = !state.autopilot;
+      document.getElementById('btnAutopilot').classList.toggle('active');
+      document.getElementById('apStatus').textContent = state.autopilot ? 'ON' : 'OFF';
+    });
+
+    document.getElementById('btnGear').addEventListener('click', () => {
+      state.gearDown = !state.gearDown;
+      document.getElementById('btnGear').classList.toggle('active');
+      document.getElementById('gearStatus').textContent = state.gearDown ? 'DOWN' : 'UP';
+    });
+
+    document.getElementById('flapsSlider').addEventListener('input', (e) => {
+      state.flaps = parseInt(e.target.value);
+      const angles = ['0°', '5°', '15°', '25°', '40°'];
+      document.getElementById('flapsValue').textContent = angles[state.flaps];
+      document.getElementById('flapsDisplay').textContent = angles[state.flaps];
+    });
+
+    document.getElementById('headingSlider').addEventListener('input', (e) => {
+      state.targetHeading = parseInt(e.target.value);
+      document.getElementById('hdgDisplay').textContent = String(state.targetHeading).padStart(3, '0') + '°';
+    });
+
+    document.getElementById('altitudeSlider').addEventListener('input', (e) => {
+      state.targetAltitude = parseInt(e.target.value);
+      document.getElementById('altDisplay').textContent = state.targetAltitude.toLocaleString() + ' ft';
+    });
+
+    document.getElementById('btnEng1').addEventListener('click', () => {
+      state.engine1 = !state.engine1;
+      document.getElementById('btnEng1').classList.toggle('active');
+      document.getElementById('eng1Status').textContent = state.engine1 ? 'RUN' : 'OFF';
+    });
+
+    document.getElementById('btnEng2').addEventListener('click', () => {
+      state.engine2 = !state.engine2;
+      document.getElementById('btnEng2').classList.toggle('active');
+      document.getElementById('eng2Status').textContent = state.engine2 ? 'RUN' : 'OFF';
+    });
+
+    document.getElementById('btnLights').addEventListener('click', () => {
+      state.lightsOn = !state.lightsOn;
+      document.getElementById('btnLights').classList.toggle('active');
+      document.getElementById('lightsStatus').textContent = state.lightsOn ? 'ON' : 'OFF';
+    });
+
+    document.getElementById('btnBattery').addEventListener('click', () => {
+      state.batteryOn = !state.batteryOn;
+      document.getElementById('btnBattery').classList.toggle('active');
+      document.getElementById('batteryStatus').textContent = state.batteryOn ? 'ON' : 'OFF';
+    });
+
+    // ===== RENDERING =====
+    function drawSky() {
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, '#1e3a5f');
+      gradient.addColorStop(0.5, '#87ceeb');
+      gradient.addColorStop(1, '#2d5a2d');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawGround() {
+      const groundY = canvas.height * 0.65;
+      ctx.fillStyle = '#3a5f2f';
+      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+      
+      // Grid
+      ctx.strokeStyle = 'rgba(0, 255, 100, 0.15)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 80) {
+        ctx.beginPath();
+        ctx.moveTo(x, groundY);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+    }
+
+    function drawAircraft() {
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(state.roll * Math.PI / 180);
+
+      // Fuselage
+      ctx.fillStyle = '#e8e8e8';
+      ctx.fillRect(-15, -40, 30, 100);
+
+      // Wings
+      ctx.fillStyle = '#c0c0c0';
+      ctx.fillRect(-120, -8, 240, 16);
+
+      // Tail
+      ctx.fillStyle = '#d0d0d0';
+      ctx.beginPath();
+      ctx.moveTo(-10, 40);
+      ctx.lineTo(0, 60);
+      ctx.lineTo(10, 40);
+      ctx.closePath();
+      ctx.fill();
+
+      // Cockpit
+      ctx.fillStyle = '#4499ff';
+      ctx.fillRect(-10, -35, 20, 15);
+
+      // Engines
+      ctx.fillStyle = '#444';
+      ctx.fillRect(-90, -12, 20, 24);
+      ctx.fillRect(70, -12, 20, 24);
+
+      ctx.restore();
+
+      // Altitude line
+      ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx, cy + 80);
+      ctx.stroke();
+    }
+
+    function drawHUD() {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 212, 255, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0, 212, 255, 0.4)';
+
+      // Pitch ladder
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      
+      for (let i = -6; i <= 6; i++) {
+        const y = cy - (state.pitch + i * 5) * 3;
+        if (y < 0 || y > canvas.height) continue;
+        
+        if (i % 2 === 0) {
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = i === 0 ? 'rgba(0, 212, 255, 0.6)' : 'rgba(0, 212, 255, 0.3)';
+          ctx.beginPath();
+          ctx.moveTo(cx - 60, y);
+          ctx.lineTo(cx + 60, y);
+          ctx.stroke();
+
+          ctx.fillStyle = 'rgba(0, 212, 255, 0.5)';
+          ctx.font = '12px Courier New';
+          ctx.textAlign = 'center';
+          ctx.fillText(i * 5, cx - 80, y + 4);
+          ctx.fillText(i * 5, cx + 80, y + 4);
+        }
+      }
+
+      // Bank angle indicator
+      ctx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy - 100, 80, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Bank markers
+      for (let angle = -180; angle <= 180; angle += 15) {
+        const rad = angle * Math.PI / 180;
+        const x1 = cx + Math.cos(rad) * 75;
+        const y1 = cy - 100 + Math.sin(rad) * 75;
+        const x2 = cx + Math.cos(rad) * 85;
+        const y2 = cy - 100 + Math.sin(rad) * 85;
+        ctx.lineWidth = angle % 30 === 0 ? 3 : 1;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      // Bank indicator pointer
+      const bankRad = state.roll * Math.PI / 180;
+      ctx.strokeStyle = 'rgba(0, 212, 255, 0.8)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(bankRad) * 75, cy - 100 + Math.sin(bankRad) * 75);
+      ctx.lineTo(cx + Math.cos(bankRad) * 90, cy - 100 + Math.sin(bankRad) * 90);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function updateInstruments() {
+      document.getElementById('altValue').textContent = Math.round(state.altitude).toLocaleString() + ' ft';
+      document.getElementById('speedValue').textContent = Math.round(state.speed) + ' kts';
+      document.getElementById('vsValue').textContent = Math.round(state.verticalSpeed) + ' fpm';
+      document.getElementById('headingValue').textContent = String(Math.round(state.heading)).padStart(3, '0') + '°';
+      document.getElementById('pitchValue').textContent = state.pitch.toFixed(1) + '°';
+      document.getElementById('bankValue').textContent = state.roll.toFixed(1) + '°';
+      document.getElementById('machValue').textContent = flightModel.mach.toFixed(2);
+      document.getElementById('fuelValue').textContent = Math.round(state.fuel).toLocaleString() + ' kg';
+
+      document.getElementById('n1Value').textContent = Math.round(state.n1_1) + '%';
+      document.getElementById('n2Value').textContent = Math.round(state.n1_2) + '%';
+
+      document.getElementById('throttle1Value').textContent = Math.round(state.throttle1) + '%';
+      document.getElementById('throttle2Value').textContent = Math.round(state.throttle2) + '%';
+
+      document.getElementById('yokePitch').textContent = state.pitch.toFixed(1);
+      document.getElementById('yokeRoll').textContent = state.roll.toFixed(1);
+
+      document.getElementById('altBar').style.width = Math.min(100, (state.altitude / 43000) * 100) + '%';
+      document.getElementById('speedBar').style.width = Math.min(100, (state.speed / 500) * 100) + '%';
+      document.getElementById('n1Bar').style.width = state.n1_1 + '%';
+      document.getElementById('n2Bar').style.width = state.n1_2 + '%';
+      document.getElementById('fuelBar').style.width = Math.max(0, (state.fuel / 25000) * 100) + '%';
+
+      document.getElementById('throttle1').querySelector('.throttle-fill').style.height = state.throttle1 + '%';
+      document.getElementById('throttle2').querySelector('.throttle-fill').style.height = state.throttle2 + '%';
+
+      // Status
+      let status = 'FLYING';
+      if (state.altitude < 50) status = 'GROUND';
+      if (state.speed < 50 && state.altitude < 100) status = 'PARKED';
+      if (!state.engine1 || !state.engine2) status = 'ENGINES OFF';
+      if (state.fuel < 1000) status = 'LOW FUEL';
+
+      document.getElementById('statusText').textContent = status;
+
+      // Flight time
+      state.flightTime += 0.016;
+      const hours = Math.floor(state.flightTime / 3600);
+      const mins = Math.floor((state.flightTime % 3600) / 60);
+      const secs = Math.floor(state.flightTime % 60);
+      document.getElementById('flightTime').textContent = 
+        String(hours).padStart(2, '0') + ':' + 
+        String(mins).padStart(2, '0') + ':' + 
+        String(secs).padStart(2, '0');
+    }
+
+    function render() {
+      drawSky();
+      drawGround();
+      drawAircraft();
+      drawHUD();
+    }
+
+    // ===== MAIN LOOP =====
+    let lastTime = performance.now();
+    function loop(currentTime) {
+      const deltaTime = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+
+      flightModel.update(deltaTime);
+      updateInstruments();
+      render();
+
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
